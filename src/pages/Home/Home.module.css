@@ -1,0 +1,31 @@
+.container {
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+.title {
+  color: #333;
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -1px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .title {
+    font-size: 28px;
+  }
+  
+  .container {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 24px;
+  }
+}
