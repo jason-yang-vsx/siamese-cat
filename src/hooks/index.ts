@@ -1,7 +1,8 @@
-// Custom hooks placeholder
-// TODO: 實作專案相關的自訂 hooks
-
+// Custom hooks
 import { useState, useEffect } from 'react'
+
+export { useBridge } from './useBridge'
+export { useStudents } from './useStudents'
 
 /**
  * Hook for managing local storage with type safety

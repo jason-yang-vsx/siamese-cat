@@ -1,0 +1,226 @@
+/**
+ * Spinner Component Styles
+ * Matching the design spec from spinner.html
+ */
+
+.container {
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 40px;
+}
+
+.title {
+  color: #333;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  letter-spacing: -1px;
+}
+
+.spinnerContainer {
+  position: relative;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinnerWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 20px;
+  /* Ensure minimum dimensions for initialization */
+  min-width: 300px;
+  width: 100%;
+}
+
+/* Pointer Styles - matching design spec exactly */
+.pointer {
+  position: absolute;
+  width: 0;
+  height: 0;
+  filter: drop-shadow(3px 3px 8px rgba(0, 0, 0, 0.3));
+  z-index: 10;
+}
+
+.pointerRight {
+  position: absolute;
+  right: -25px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 18px solid transparent;
+  border-bottom: 18px solid transparent;
+  border-right: 25px solid #dc2626;
+  filter: drop-shadow(3px 3px 8px rgba(0, 0, 0, 0.3));
+  z-index: 10;
+}
+
+.pointer--right {
+  position: absolute;
+  right: -25px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 18px solid transparent;
+  border-bottom: 18px solid transparent;
+  border-right: 25px solid #dc2626;
+  filter: drop-shadow(3px 3px 8px rgba(0, 0, 0, 0.3));
+  z-index: 10;
+}
+
+.pointer--top {
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-top: 25px solid #dc2626;
+}
+
+.pointer--left {
+  left: -25px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 18px solid transparent;
+  border-bottom: 18px solid transparent;
+  border-left: 25px solid #dc2626;
+}
+
+.pointer--bottom {
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-bottom: 25px solid #dc2626;
+}
+
+/* Removed control buttons and modal styles - not needed for US-003 */
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 20px;
+}
+
+.loadingSpinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loadingText {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+/* Error State */
+.errorContainer {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.errorMessage {
+  color: #dc2626;
+  font-size: 16px;
+  margin: 0 0 10px 0;
+}
+
+.retryButton {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background-color: #b91c1c;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #6b7280;
+  gap: 16px;
+}
+
+.emptyStateIcon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.emptyStateText {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.emptyStateHint {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* Animations - only keeping spin for loading indicator */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .title {
+    font-size: 28px;
+  }
+
+  .pointer--right {
+    right: -20px;
+    border-top-width: 14px;
+    border-bottom-width: 14px;
+    border-right-width: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 24px;
+  }
+
+  .spinnerWrapper {
+    padding: 10px;
+  }
+}
