@@ -213,19 +213,19 @@
     padding: 15px;
     margin: 10px;
   }
-  
+
   .header h2 {
     font-size: 20px;
   }
-  
+
   .controls {
     flex-direction: column;
   }
-  
+
   .button {
     width: 100%;
   }
-  
+
   .studentGrid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
@@ -237,12 +237,12 @@
     align-items: flex-start;
     gap: 4px;
   }
-  
+
   .studentGrid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 8px;
   }
-  
+
   .studentCard {
     padding: 8px;
   }

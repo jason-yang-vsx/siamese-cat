@@ -3,13 +3,17 @@
  * 負責偵測當前執行環境的平台類型
  */
 
-import type { PlatformType, PlatformDetectionResult, WindowWithBridge } from './types/platform.types';
+import type {
+  PlatformDetectionResult,
+  PlatformType,
+  WindowWithBridge,
+} from './types/platform.types'
 
 export class PlatformDetector {
-  private win: WindowWithBridge;
+  private win: WindowWithBridge
 
   constructor() {
-    this.win = window as WindowWithBridge;
+    this.win = window as WindowWithBridge
   }
 
   /**
@@ -30,8 +34,8 @@ export class PlatformDetector {
       return {
         platform: 'windows',
         confidence: 'high',
-        detectionMethod: 'Windows.receiveMessage'
-      };
+        detectionMethod: 'Windows.receiveMessage',
+      }
     }
 
     // 2. Android 物件方法
@@ -39,8 +43,8 @@ export class PlatformDetector {
       return {
         platform: 'android',
         confidence: 'high',
-        detectionMethod: 'Android object methods'
-      };
+        detectionMethod: 'Android object methods',
+      }
     }
 
     // 3. asyncBridge + Android UserAgent
@@ -48,8 +52,8 @@ export class PlatformDetector {
       return {
         platform: 'android',
         confidence: 'high',
-        detectionMethod: 'asyncBridge + Android UserAgent'
-      };
+        detectionMethod: 'asyncBridge + Android UserAgent',
+      }
     }
 
     // 4. asyncBridge + !chrome.webview (Android)
@@ -57,8 +61,8 @@ export class PlatformDetector {
       return {
         platform: 'android',
         confidence: 'medium',
-        detectionMethod: 'asyncBridge without chrome.webview'
-      };
+        detectionMethod: 'asyncBridge without chrome.webview',
+      }
     }
 
     // 5. asyncBridge + chrome.webview (Windows)
@@ -66,8 +70,8 @@ export class PlatformDetector {
       return {
         platform: 'windows',
         confidence: 'high',
-        detectionMethod: 'asyncBridge + chrome.webview'
-      };
+        detectionMethod: 'asyncBridge + chrome.webview',
+      }
     }
 
     // 6. chrome.webview only (Windows)
@@ -75,8 +79,8 @@ export class PlatformDetector {
       return {
         platform: 'windows',
         confidence: 'medium',
-        detectionMethod: 'chrome.webview only'
-      };
+        detectionMethod: 'chrome.webview only',
+      }
     }
 
     // 7. Electron
@@ -84,93 +88,101 @@ export class PlatformDetector {
       return {
         platform: 'electron',
         confidence: 'high',
-        detectionMethod: 'electronAPI'
-      };
+        detectionMethod: 'electronAPI',
+      }
     }
 
     // 8. Web fallback
     return {
       platform: 'web',
       confidence: 'low',
-      detectionMethod: 'fallback'
-    };
+      detectionMethod: 'fallback',
+    }
   }
 
   /**
    * 獲取簡單的平台類型
    */
   getPlatform(): PlatformType {
-    return this.detect().platform;
+    return this.detect().platform
   }
 
   /**
    * 檢查是否有 Windows.receiveMessage
    */
   private hasWindowsReceiveMessage(): boolean {
-    return !!(this.win.Windows?.receiveMessage && 
-             typeof this.win.Windows.receiveMessage === 'function');
+    return !!(
+      this.win.Windows?.receiveMessage &&
+      typeof this.win.Windows.receiveMessage === 'function'
+    )
   }
 
   /**
    * 檢查是否有 Android 物件
    */
   private hasAndroidObject(): boolean {
-    return !!(this.win.Android && (
-      typeof this.win.Android.receiveMessage === 'function' ||
-      typeof this.win.Android.getStudentList === 'function' ||
-      typeof this.win.Android.studentPicked === 'function' ||
-      typeof this.win.Android.studentRemoved === 'function'
-    ));
+    return !!(
+      this.win.Android &&
+      (typeof this.win.Android.receiveMessage === 'function' ||
+        typeof this.win.Android.getStudentList === 'function' ||
+        typeof this.win.Android.studentPicked === 'function' ||
+        typeof this.win.Android.studentRemoved === 'function')
+    )
   }
 
   /**
    * 檢查是否有 asyncBridge
    */
   private hasAsyncBridge(): boolean {
-    return !!(this.win.asyncBridge && (
-      typeof this.win.asyncBridge.getStudentList === 'function' ||
-      typeof this.win.asyncBridge.studentPicked === 'function' ||
-      typeof this.win.asyncBridge.studentRemoved === 'function'
-    ));
+    return !!(
+      this.win.asyncBridge &&
+      (typeof this.win.asyncBridge.getStudentList === 'function' ||
+        typeof this.win.asyncBridge.studentPicked === 'function' ||
+        typeof this.win.asyncBridge.studentRemoved === 'function')
+    )
   }
 
   /**
    * 檢查是否有 chrome.webview
    */
   private hasChromeWebView(): boolean {
-    return !!(this.win.chrome?.webview?.postMessage && 
-             typeof this.win.chrome.webview.postMessage === 'function');
+    return !!(
+      this.win.chrome?.webview?.postMessage &&
+      typeof this.win.chrome.webview.postMessage === 'function'
+    )
   }
 
   /**
    * 檢查是否有 Electron API
    */
   private hasElectronAPI(): boolean {
-    return !!(this.win.electronAPI && 
-             typeof this.win.electronAPI.send === 'function' &&
-             typeof this.win.electronAPI.on === 'function');
+    return !!(
+      this.win.electronAPI &&
+      typeof this.win.electronAPI.send === 'function' &&
+      typeof this.win.electronAPI.on === 'function'
+    )
   }
 
   /**
    * 檢查 UserAgent 是否為 Android
    */
   private isAndroidUserAgent(): boolean {
-    return /Android/i.test(navigator.userAgent);
+    return /Android/i.test(navigator.userAgent)
   }
 
   /**
    * 獲取詳細的平台資訊
    */
   getDetailedInfo(): {
-    detection: PlatformDetectionResult;
+    detection: PlatformDetectionResult
     capabilities: {
-      hasAsyncBridge: boolean;
-      hasChromeWebView: boolean;
-      hasWindowsAPI: boolean;
-      hasAndroidAPI: boolean;
-      hasElectronAPI: boolean;
-    };
-    userAgent: string;
+      hasAsyncBridge: boolean
+      hasChromeWebView: boolean
+      hasWindowsAPI: boolean
+      hasAndroidAPI: boolean
+      hasElectronAPI: boolean
+    }
+    userAgent: string
   } {
     return {
       detection: this.detect(),
@@ -179,9 +191,9 @@ export class PlatformDetector {
         hasChromeWebView: this.hasChromeWebView(),
         hasWindowsAPI: this.hasWindowsReceiveMessage(),
         hasAndroidAPI: this.hasAndroidObject(),
-        hasElectronAPI: this.hasElectronAPI()
+        hasElectronAPI: this.hasElectronAPI(),
       },
-      userAgent: navigator.userAgent
-    };
+      userAgent: navigator.userAgent,
+    }
   }
 }

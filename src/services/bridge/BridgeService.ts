@@ -3,35 +3,35 @@
  * 主要的 Bridge 服務，使用策略模式處理不同平台
  */
 
-import { EventEmitter } from './utils/EventEmitter';
-import { PlatformDetector } from './PlatformDetector';
-import { BridgeStrategy } from './strategies/BridgeStrategy';
-import { WindowsBridge } from './strategies/WindowsBridge';
-import { AndroidBridge } from './strategies/AndroidBridge';
-import { WebBridge } from './strategies/WebBridge';
+import { EventEmitter } from './utils/EventEmitter'
+import { PlatformDetector } from './PlatformDetector'
+import { BridgeStrategy } from './strategies/BridgeStrategy'
+import { WindowsBridge } from './strategies/WindowsBridge'
+import { AndroidBridge } from './strategies/AndroidBridge'
+import { WebBridge } from './strategies/WebBridge'
 import type {
   BridgeAPI,
   Student,
   StudentPickedEvent,
   StudentRemovedEvent,
-  ConnectionInfo
-} from './types/bridge.types';
-import type { PlatformType } from './types/platform.types';
+  ConnectionInfo,
+} from './types/bridge.types'
+import type { PlatformType } from './types/platform.types'
 
 export class BridgeService implements BridgeAPI {
-  private static instance: BridgeService | null = null;
-  private eventEmitter: EventEmitter;
-  private platformDetector: PlatformDetector;
-  private strategy: BridgeStrategy | null = null;
-  private platform: PlatformType;
-  private connectionRetryCount = 0;
-  private maxRetries = 3;
-  private retryTimeout: number | null = null;
+  private static instance: BridgeService | null = null
+  private eventEmitter: EventEmitter
+  private platformDetector: PlatformDetector
+  private strategy: BridgeStrategy | null = null
+  private platform: PlatformType
+  private connectionRetryCount = 0
+  private maxRetries = 3
+  private retryTimeout: number | null = null
 
   private constructor() {
-    this.eventEmitter = new EventEmitter();
-    this.platformDetector = new PlatformDetector();
-    this.platform = 'web';
+    this.eventEmitter = new EventEmitter()
+    this.platformDetector = new PlatformDetector()
+    this.platform = 'web'
   }
 
   /**
@@ -39,9 +39,9 @@ export class BridgeService implements BridgeAPI {
    */
   static getInstance(): BridgeService {
     if (!BridgeService.instance) {
-      BridgeService.instance = new BridgeService();
+      BridgeService.instance = new BridgeService()
     }
-    return BridgeService.instance;
+    return BridgeService.instance
   }
 
   /**
@@ -50,51 +50,55 @@ export class BridgeService implements BridgeAPI {
   async connect(): Promise<void> {
     try {
       // 偵測平台
-      const detectionResult = this.platformDetector.detect();
-      this.platform = detectionResult.platform;
-      
-      console.log(`Platform detected: ${detectionResult.platform} (${detectionResult.confidence} confidence)`);
-      console.log(`Detection method: ${detectionResult.detectionMethod}`);
+      const detectionResult = this.platformDetector.detect()
+      this.platform = detectionResult.platform
+
+      console.log(
+        `Platform detected: ${detectionResult.platform} (${detectionResult.confidence} confidence)`
+      )
+      console.log(`Detection method: ${detectionResult.detectionMethod}`)
 
       // 根據平台選擇策略
-      this.strategy = this.createStrategy(detectionResult.platform);
+      this.strategy = this.createStrategy(detectionResult.platform)
 
       // 連接
-      await this.strategy.connect();
-      
+      await this.strategy.connect()
+
       // 重置重試計數
-      this.connectionRetryCount = 0;
-      
+      this.connectionRetryCount = 0
+
       // 發送連接成功事件
       this.eventEmitter.emit('connected', {
         platform: this.platform,
-        timestamp: new Date().toISOString()
-      });
+        timestamp: new Date().toISOString(),
+      })
 
-      console.log('Bridge service connected successfully');
+      console.log('Bridge service connected successfully')
     } catch (error) {
-      console.error('Failed to connect bridge:', error);
-      
+      console.error('Failed to connect bridge:', error)
+
       // 嘗試重試
       if (this.connectionRetryCount < this.maxRetries) {
-        this.connectionRetryCount++;
-        console.log(`Retrying connection (${this.connectionRetryCount}/${this.maxRetries})...`);
-        
+        this.connectionRetryCount++
+        console.log(
+          `Retrying connection (${this.connectionRetryCount}/${this.maxRetries})...`
+        )
+
         // 延遲後重試
         this.retryTimeout = window.setTimeout(() => {
-          this.connect();
-        }, 2000 * this.connectionRetryCount); // 遞增延遲
+          this.connect()
+        }, 2000 * this.connectionRetryCount) // 遞增延遲
       } else {
         // 重試失敗，使用 Web fallback
-        console.warn('Max retries reached, falling back to Web mode');
-        this.platform = 'web';
-        this.strategy = new WebBridge(this.eventEmitter);
-        
+        console.warn('Max retries reached, falling back to Web mode')
+        this.platform = 'web'
+        this.strategy = new WebBridge(this.eventEmitter)
+
         try {
-          await this.strategy.connect();
+          await this.strategy.connect()
         } catch (fallbackError) {
-          console.error('Fallback to Web mode also failed:', fallbackError);
-          throw fallbackError;
+          console.error('Fallback to Web mode also failed:', fallbackError)
+          throw fallbackError
         }
       }
     }
@@ -105,40 +109,40 @@ export class BridgeService implements BridgeAPI {
    */
   disconnect(): void {
     if (this.retryTimeout) {
-      clearTimeout(this.retryTimeout);
-      this.retryTimeout = null;
+      clearTimeout(this.retryTimeout)
+      this.retryTimeout = null
     }
 
     if (this.strategy) {
-      this.strategy.disconnect();
-      this.strategy = null;
+      this.strategy.disconnect()
+      this.strategy = null
     }
 
     this.eventEmitter.emit('disconnected', {
       platform: this.platform,
-      timestamp: new Date().toISOString()
-    });
+      timestamp: new Date().toISOString(),
+    })
 
-    console.log('Bridge service disconnected');
+    console.log('Bridge service disconnected')
   }
 
   /**
    * 獲取學生列表
    */
   async getStudentList(): Promise<Student[]> {
-    this.ensureConnected();
-    
+    this.ensureConnected()
+
     try {
-      const students = await this.strategy!.getStudentList();
-      
+      const students = await this.strategy!.getStudentList()
+
       // 發送事件
-      this.eventEmitter.emit('studentsLoaded', students);
-      
-      return students;
+      this.eventEmitter.emit('studentsLoaded', students)
+
+      return students
     } catch (error) {
-      console.error('Failed to get student list:', error);
-      this.handleError('getStudentList', error);
-      throw error;
+      console.error('Failed to get student list:', error)
+      this.handleError('getStudentList', error)
+      throw error
     }
   }
 
@@ -146,22 +150,22 @@ export class BridgeService implements BridgeAPI {
    * 通知學生被選中
    */
   async studentPicked(event: StudentPickedEvent): Promise<boolean> {
-    this.ensureConnected();
-    
+    this.ensureConnected()
+
     try {
-      const result = await this.strategy!.studentPicked(event);
-      
+      const result = await this.strategy!.studentPicked(event)
+
       // 發送事件
       this.eventEmitter.emit('studentPickedComplete', {
         ...event,
-        success: result
-      });
-      
-      return result;
+        success: result,
+      })
+
+      return result
     } catch (error) {
-      console.error('Failed to notify student picked:', error);
-      this.handleError('studentPicked', error);
-      throw error;
+      console.error('Failed to notify student picked:', error)
+      this.handleError('studentPicked', error)
+      throw error
     }
   }
 
@@ -169,22 +173,22 @@ export class BridgeService implements BridgeAPI {
    * 通知學生被移除
    */
   async studentRemoved(event: StudentRemovedEvent): Promise<boolean> {
-    this.ensureConnected();
-    
+    this.ensureConnected()
+
     try {
-      const result = await this.strategy!.studentRemoved(event);
-      
+      const result = await this.strategy!.studentRemoved(event)
+
       // 發送事件
       this.eventEmitter.emit('studentRemovedComplete', {
         ...event,
-        success: result
-      });
-      
-      return result;
+        success: result,
+      })
+
+      return result
     } catch (error) {
-      console.error('Failed to notify student removed:', error);
-      this.handleError('studentRemoved', error);
-      throw error;
+      console.error('Failed to notify student removed:', error)
+      this.handleError('studentRemoved', error)
+      throw error
     }
   }
 
@@ -195,47 +199,49 @@ export class BridgeService implements BridgeAPI {
     if (!this.strategy) {
       return {
         status: 'disconnected',
-        platform: this.platform
-      };
+        platform: this.platform,
+      }
     }
-    
-    return this.strategy.getConnectionInfo();
+
+    return this.strategy.getConnectionInfo()
   }
 
   /**
    * 訂閱事件
    */
   on(event: string, callback: (data: any) => void): () => void {
-    return this.eventEmitter.on(event, callback);
+    return this.eventEmitter.on(event, callback)
   }
 
   /**
    * 取消訂閱事件
    */
   off(event: string, callback?: (data: any) => void): void {
-    this.eventEmitter.off(event, callback);
+    this.eventEmitter.off(event, callback)
   }
 
   /**
    * 獲取當前平台
    */
   getPlatform(): PlatformType {
-    return this.platform;
+    return this.platform
   }
 
   /**
    * 獲取平台詳細資訊
    */
   getPlatformInfo() {
-    return this.platformDetector.getDetailedInfo();
+    return this.platformDetector.getDetailedInfo()
   }
 
   /**
    * 檢查是否已連接
    */
   isConnected(): boolean {
-    return this.strategy !== null && 
-           this.strategy.getConnectionInfo().status === 'connected';
+    return (
+      this.strategy !== null &&
+      this.strategy.getConnectionInfo().status === 'connected'
+    )
   }
 
   /**
@@ -244,12 +250,12 @@ export class BridgeService implements BridgeAPI {
   private createStrategy(platform: PlatformType): BridgeStrategy {
     switch (platform) {
       case 'windows':
-        return new WindowsBridge(this.eventEmitter);
+        return new WindowsBridge(this.eventEmitter)
       case 'android':
-        return new AndroidBridge(this.eventEmitter);
+        return new AndroidBridge(this.eventEmitter)
       case 'web':
       default:
-        return new WebBridge(this.eventEmitter);
+        return new WebBridge(this.eventEmitter)
     }
   }
 
@@ -258,12 +264,12 @@ export class BridgeService implements BridgeAPI {
    */
   private ensureConnected(): void {
     if (!this.strategy) {
-      throw new Error('Bridge not connected. Call connect() first.');
+      throw new Error('Bridge not connected. Call connect() first.')
     }
-    
-    const status = this.strategy.getConnectionInfo().status;
+
+    const status = this.strategy.getConnectionInfo().status
     if (status !== 'connected') {
-      throw new Error(`Bridge not ready. Current status: ${status}`);
+      throw new Error(`Bridge not ready. Current status: ${status}`)
     }
   }
 
@@ -275,15 +281,15 @@ export class BridgeService implements BridgeAPI {
       operation,
       message: error.message || 'Unknown error',
       timestamp: new Date().toISOString(),
-      platform: this.platform
-    };
-    
-    this.eventEmitter.emit('error', errorInfo);
-    
+      platform: this.platform,
+    }
+
+    this.eventEmitter.emit('error', errorInfo)
+
     // 如果是連接錯誤，嘗試重新連接
     if (error.message && error.message.includes('not connected')) {
-      console.log('Connection lost, attempting to reconnect...');
-      this.connect();
+      console.log('Connection lost, attempting to reconnect...')
+      this.connect()
     }
   }
 
@@ -292,8 +298,8 @@ export class BridgeService implements BridgeAPI {
    */
   getMockService(): WebBridge | null {
     if (this.platform === 'web' && this.strategy instanceof WebBridge) {
-      return this.strategy;
+      return this.strategy
     }
-    return null;
+    return null
   }
 }

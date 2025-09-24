@@ -3,68 +3,71 @@
  * Bridge 策略的抽象基礎類別
  */
 
-import { EventEmitter } from '../utils/EventEmitter';
-import type { 
-  Student, 
-  StudentPickedEvent, 
+import { EventEmitter } from '../utils/EventEmitter'
+import type {
+  Student,
+  StudentPickedEvent,
   StudentRemovedEvent,
   BridgeMessage,
   ConnectionInfo,
-  ConnectionStatus
-} from '../types/bridge.types';
-import type { PlatformType, WindowWithBridge } from '../types/platform.types';
+  ConnectionStatus,
+} from '../types/bridge.types'
+import type { PlatformType, WindowWithBridge } from '../types/platform.types'
 
 export abstract class BridgeStrategy {
-  protected win: WindowWithBridge;
-  protected eventEmitter: EventEmitter;
-  protected connectionStatus: ConnectionStatus = 'disconnected';
-  protected lastActivity: Date | null = null;
-  protected messageIdCounter = 0;
-  protected pendingRequests: Map<string, {
-    resolve: (value: any) => void;
-    reject: (error: any) => void;
-    timeout: number;
-  }> = new Map();
+  protected win: WindowWithBridge
+  protected eventEmitter: EventEmitter
+  protected connectionStatus: ConnectionStatus = 'disconnected'
+  protected lastActivity: Date | null = null
+  protected messageIdCounter = 0
+  protected pendingRequests: Map<
+    string,
+    {
+      resolve: (value: any) => void
+      reject: (error: any) => void
+      timeout: number
+    }
+  > = new Map()
 
   constructor(eventEmitter: EventEmitter) {
-    this.win = window as WindowWithBridge;
-    this.eventEmitter = eventEmitter;
+    this.win = window as WindowWithBridge
+    this.eventEmitter = eventEmitter
   }
 
   /**
    * 獲取平台類型
    */
-  abstract getPlatform(): PlatformType;
+  abstract getPlatform(): PlatformType
 
   /**
    * 初始化連接
    */
-  abstract connect(): Promise<void>;
+  abstract connect(): Promise<void>
 
   /**
    * 斷開連接
    */
-  abstract disconnect(): void;
+  abstract disconnect(): void
 
   /**
    * 設置事件監聽器
    */
-  abstract setupListeners(): void;
+  abstract setupListeners(): void
 
   /**
    * 獲取學生列表
    */
-  abstract getStudentList(): Promise<Student[]>;
+  abstract getStudentList(): Promise<Student[]>
 
   /**
    * 學生被選中
    */
-  abstract studentPicked(event: StudentPickedEvent): Promise<boolean>;
+  abstract studentPicked(event: StudentPickedEvent): Promise<boolean>
 
   /**
    * 學生被移除
    */
-  abstract studentRemoved(event: StudentRemovedEvent): Promise<boolean>;
+  abstract studentRemoved(event: StudentRemovedEvent): Promise<boolean>
 
   /**
    * 獲取連接資訊
@@ -73,15 +76,15 @@ export abstract class BridgeStrategy {
     return {
       status: this.connectionStatus,
       platform: this.getPlatform(),
-      lastActivity: this.lastActivity?.toISOString()
-    };
+      lastActivity: this.lastActivity?.toISOString(),
+    }
   }
 
   /**
    * 生成唯一的訊息 ID
    */
   protected generateMessageId(): string {
-    return `msg_${Date.now()}_${++this.messageIdCounter}`;
+    return `msg_${Date.now()}_${++this.messageIdCounter}`
   }
 
   /**
@@ -92,8 +95,8 @@ export abstract class BridgeStrategy {
       event,
       data,
       timestamp: new Date().toISOString(),
-      messageId: this.generateMessageId()
-    };
+      messageId: this.generateMessageId(),
+    }
   }
 
   /**
@@ -102,9 +105,9 @@ export abstract class BridgeStrategy {
   protected createTimeout(timeout: number = 5000): Promise<never> {
     return new Promise((_, reject) => {
       window.setTimeout(() => {
-        reject(new Error(`Request timeout after ${timeout}ms`));
-      }, timeout);
-    });
+        reject(new Error(`Request timeout after ${timeout}ms`))
+      }, timeout)
+    })
   }
 
   /**
@@ -116,27 +119,27 @@ export abstract class BridgeStrategy {
   ): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const timeoutId = window.setTimeout(() => {
-        this.pendingRequests.delete(messageId);
-        reject(new Error(`Request timeout after ${timeout}ms`));
-      }, timeout);
+        this.pendingRequests.delete(messageId)
+        reject(new Error(`Request timeout after ${timeout}ms`))
+      }, timeout)
 
       this.pendingRequests.set(messageId, {
         resolve,
         reject,
-        timeout: timeoutId
-      });
-    });
+        timeout: timeoutId,
+      })
+    })
   }
 
   /**
    * 解析待處理的請求
    */
   protected resolvePendingRequest(messageId: string, data: any): void {
-    const pending = this.pendingRequests.get(messageId);
+    const pending = this.pendingRequests.get(messageId)
     if (pending) {
-      window.clearTimeout(pending.timeout);
-      pending.resolve(data);
-      this.pendingRequests.delete(messageId);
+      window.clearTimeout(pending.timeout)
+      pending.resolve(data)
+      this.pendingRequests.delete(messageId)
     }
   }
 
@@ -144,11 +147,11 @@ export abstract class BridgeStrategy {
    * 拒絕待處理的請求
    */
   protected rejectPendingRequest(messageId: string, error: any): void {
-    const pending = this.pendingRequests.get(messageId);
+    const pending = this.pendingRequests.get(messageId)
     if (pending) {
-      window.clearTimeout(pending.timeout);
-      pending.reject(error);
-      this.pendingRequests.delete(messageId);
+      window.clearTimeout(pending.timeout)
+      pending.reject(error)
+      this.pendingRequests.delete(messageId)
     }
   }
 
@@ -156,15 +159,15 @@ export abstract class BridgeStrategy {
    * 更新連接狀態
    */
   protected updateConnectionStatus(status: ConnectionStatus): void {
-    this.connectionStatus = status;
-    this.eventEmitter.emit('connectionStatusChanged', status);
+    this.connectionStatus = status
+    this.eventEmitter.emit('connectionStatusChanged', status)
   }
 
   /**
    * 更新最後活動時間
    */
   protected updateLastActivity(): void {
-    this.lastActivity = new Date();
+    this.lastActivity = new Date()
   }
 
   /**
@@ -172,10 +175,10 @@ export abstract class BridgeStrategy {
    */
   protected cleanup(): void {
     // 清理所有待處理的請求
-    this.pendingRequests.forEach((pending) => {
-      window.clearTimeout(pending.timeout);
-      pending.reject(new Error('Connection closed'));
-    });
-    this.pendingRequests.clear();
+    this.pendingRequests.forEach(pending => {
+      window.clearTimeout(pending.timeout)
+      pending.reject(new Error('Connection closed'))
+    })
+    this.pendingRequests.clear()
   }
 }

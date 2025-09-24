@@ -4,17 +4,17 @@
  */
 
 // 主要服務
-export { BridgeService } from './BridgeService';
-export { PlatformDetector } from './PlatformDetector';
+export { BridgeService } from './BridgeService'
+export { PlatformDetector } from './PlatformDetector'
 
 // 策略
-export { BridgeStrategy } from './strategies/BridgeStrategy';
-export { WindowsBridge } from './strategies/WindowsBridge';
-export { AndroidBridge } from './strategies/AndroidBridge';
-export { WebBridge } from './strategies/WebBridge';
+export { AndroidBridge } from './strategies/AndroidBridge'
+export { BridgeStrategy } from './strategies/BridgeStrategy'
+export { WebBridge } from './strategies/WebBridge'
+export { WindowsBridge } from './strategies/WindowsBridge'
 
 // 工具
-export { EventEmitter } from './utils/EventEmitter';
+export { EventEmitter } from './utils/EventEmitter'
 
 // 型別 - Bridge
 export type {
@@ -27,13 +27,13 @@ export type {
   StudentListResponse,
   StudentOperationResponse,
   StudentPickedEvent,
-  StudentRemovedEvent
-} from './types/bridge.types';
+  StudentRemovedEvent,
+} from './types/bridge.types'
 
 // 型別 - Platform
 export type {
-  PlatformType,
-  PlatformInfo,
   PlatformDetectionResult,
-  WindowWithBridge
-} from './types/platform.types';
+  PlatformInfo,
+  PlatformType,
+  WindowWithBridge,
+} from './types/platform.types'
